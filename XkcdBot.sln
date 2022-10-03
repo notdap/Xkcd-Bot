@@ -1,0 +1,16 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "XkcdBot", "XkcdBot\XkcdBot.csproj", "{A263DFE6-F609-47A4-A24C-C8ABAE3FD84F}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{A263DFE6-F609-47A4-A24C-C8ABAE3FD84F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A263DFE6-F609-47A4-A24C-C8ABAE3FD84F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A263DFE6-F609-47A4-A24C-C8ABAE3FD84F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A263DFE6-F609-47A4-A24C-C8ABAE3FD84F}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+EndGlobal
