@@ -26,7 +26,7 @@ public static class Program
         await _client.SetStatusAsync(UserStatus.AFK);
         await _client.SetActivityAsync(new Game("xkcd"));
         
-        await _client.LoginAsync(TokenType.Bot, token);
+        await _client.LoginAsync(TokenType.Bot, token.Trim());
         await _client.StartAsync();
         
         await Task.Delay(-1);
@@ -103,10 +103,22 @@ public static class Program
 
         await command.FollowupAsync(embed: embed.Build());
     }
-    
-    private static Task Log(LogMessage msg)
+
+    public static void LogInfo(string message, bool newLine = true)
     {
-        switch (msg.Severity)
+        if (!newLine)
+        {
+            Console.Write(message);
+        }
+        else
+        {
+            Log(new LogMessage(LogSeverity.Info, "", message));
+        }
+    }
+    
+    private static Task Log(LogMessage message)
+    {
+        switch (message.Severity)
         {
             case LogSeverity.Error:
             case LogSeverity.Critical:
@@ -125,9 +137,9 @@ public static class Program
                 break;
         }
 
-        Console.WriteLine(msg.Exception is null
-            ? $"[{DateTime.Now.ToShortTimeString()}] [{msg.Severity.ToString().ToUpper()}] {msg.Message}"
-            : $"[{DateTime.Now.ToShortTimeString()}] [{msg.Severity.ToString().ToUpper()}] {msg.Message} {msg.Exception.ToString()}");
+        Console.Write(message.Exception is null
+            ? $"\n[{DateTime.Now.ToShortTimeString()}] [{message.Severity.ToString().ToUpper()}] {message.Message}"
+            : $"\n[{DateTime.Now.ToShortTimeString()}] [{message.Severity.ToString().ToUpper()}] {message.Message} {message.Exception.ToString()}");
 
         return Task.CompletedTask;
     }
