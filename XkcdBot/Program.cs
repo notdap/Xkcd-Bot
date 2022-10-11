@@ -86,7 +86,7 @@ public static class Program
         if (url is "" or null)
         {
             var errorEmbed = new EmbedBuilder()
-                .WithAuthor("There was an error", _client?.CurrentUser.GetDefaultAvatarUrl())
+                .WithAuthor("There was an error", _client?.CurrentUser.GetAvatarUrl())
                 .WithDescription($"The provided query *({query})* did not return any valid comic.")
                 .WithColor(Color.Red);
 
@@ -102,7 +102,7 @@ public static class Program
         catch (Exception)
         {
             var errorEmbed = new EmbedBuilder()
-                .WithAuthor("There was an error", _client?.CurrentUser.GetDefaultAvatarUrl())
+                .WithAuthor("There was an error", _client?.CurrentUser.GetAvatarUrl())
                 .WithDescription($"The provided query *({query})* did not return any valid comic.")
                 .WithColor(Color.Red);
 
@@ -118,7 +118,7 @@ public static class Program
             footer += $" • {comic.Date}";
         
             var embed = new EmbedBuilder()
-                .WithAuthor(comic.Title, _client?.CurrentUser.GetDefaultAvatarUrl(), comic.Url)
+                .WithAuthor(comic.Title, _client?.CurrentUser.GetAvatarUrl(), comic.Url)
                 .WithImageUrl(comic.Image)
                 .WithDescription(comic.Alt)
                 .WithFooter(footer)
