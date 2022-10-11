@@ -83,6 +83,17 @@ public static class Program
             url = await XkcdUtils.GetXkcdApiUrlFromStringAsync(query);
         }
 
+        if (url is "" or null)
+        {
+            var errorEmbed = new EmbedBuilder()
+                .WithAuthor("There was an error", _client?.CurrentUser.GetDefaultAvatarUrl())
+                .WithDescription($"The provided query *({query})* did not return any valid comic.")
+                .WithColor(Color.Red);
+
+            await command.FollowupAsync(embed: errorEmbed.Build());
+            return;
+        }
+
         Comic comic;
         try
         {
