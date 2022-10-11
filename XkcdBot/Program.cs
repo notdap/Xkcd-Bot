@@ -10,6 +10,8 @@ public static class Program
     
     private static async Task MainAsync()
     {
+        await XkcdUtils.LoadCacheAsync();
+        
         var config = new DiscordSocketConfig
         {
             GatewayIntents = GatewayIntents.None
@@ -18,7 +20,7 @@ public static class Program
 
         _client.Log += Log;
         
-        var token = await File.ReadAllTextAsync("token.txt");
+        var token = await File.ReadAllTextAsync("Token.txt");
 
         _client.Ready += OnReadyAsync;
         _client.SlashCommandExecuted += OnSlashCommandAsync;
@@ -44,23 +46,27 @@ public static class Program
                 .WithName("query")
                 .WithDescription("The comic's number or name").WithType(ApplicationCommandOptionType.String)
             );
+        
+        var basicCommand = new SlashCommandBuilder()
+            .WithName("bxkcd")
+            .WithDescription("Same as /xkcd but much, much simpler (just the image)")
+            .AddOption(new SlashCommandOptionBuilder()
+                .WithRequired(false)
+                .WithName("query")
+                .WithDescription("The comic's number or name").WithType(ApplicationCommandOptionType.String)
+            );
 
         await _client.CreateGlobalApplicationCommandAsync(command.Build());
+        await _client.CreateGlobalApplicationCommandAsync(basicCommand.Build());
     }
 
     private static async Task OnSlashCommandAsync(SocketSlashCommand command)
     {
         await command.DeferAsync();
 
-        string query;
-        if (command.Data.Options.Count is 0)
-        {
-            query = "standards";
-        }
-        else
-        {
-            query = command.Data.Options.First().Value as string ?? "1";
-        }
+        var query = command.Data.Options.Count is 0 
+            ? "standards" 
+            : (command.Data.Options.First().Value as string ?? "1").Trim();
 
         string url;
         try
@@ -89,33 +95,28 @@ public static class Program
             return;
         }
 
-        var footer = "No query was provided";
-        if (command.Data.Options?.Count is not 0)
-            footer = $"Query: {query}";
-        
-        var embed = new EmbedBuilder()
-            .WithAuthor(comic.Title, _client?.CurrentUser.GetDefaultAvatarUrl(), comic.Url)
-            .WithImageUrl(comic.Image)
-            .WithDescription(comic.Alt)
-            .WithFooter(footer)
-            .WithCurrentTimestamp()
-            .WithColor(Color.Green);
-
-        await command.FollowupAsync(embed: embed.Build());
-    }
-
-    public static void LogInfo(string message, bool newLine = true)
-    {
-        if (!newLine)
+        if (command.Data.Name is "xkcd")
         {
-            Console.Write(message);
+            var footer = "No query was provided";
+            if (command.Data.Options?.Count is not 0)
+                footer = $"Query: {query}";
+        
+            var embed = new EmbedBuilder()
+                .WithAuthor(comic.Title, _client?.CurrentUser.GetDefaultAvatarUrl(), comic.Url)
+                .WithImageUrl(comic.Image)
+                .WithDescription(comic.Alt)
+                .WithFooter(footer)
+                .WithCurrentTimestamp()
+                .WithColor(Color.Green);
+
+            await command.FollowupAsync(embed: embed.Build()); 
         }
         else
         {
-            Log(new LogMessage(LogSeverity.Info, "", message));
+            await command.FollowupAsync(comic.Image);
         }
     }
-    
+
     private static Task Log(LogMessage message)
     {
         switch (message.Severity)
@@ -138,8 +139,8 @@ public static class Program
         }
 
         Console.Write(message.Exception is null
-            ? $"\n[{DateTime.Now.ToShortTimeString()}] [{message.Severity.ToString().ToUpper()}] {message.Message}"
-            : $"\n[{DateTime.Now.ToShortTimeString()}] [{message.Severity.ToString().ToUpper()}] {message.Message} {message.Exception.ToString()}");
+            ? $"[{DateTime.Now.ToLongTimeString()}] [{message.Severity.ToString().ToUpper()}] {message.Message}\n"
+            : $"[{DateTime.Now.ToLongTimeString()}] [{message.Severity.ToString().ToUpper()}] {message.Message} {message.Exception.ToString()}\n");
 
         return Task.CompletedTask;
     }

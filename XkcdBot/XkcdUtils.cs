@@ -7,7 +7,8 @@ namespace XkcdBot;
 public static class XkcdUtils
 {
 
-    private static readonly Dictionary<string, Comic> Cache = new();
+    private static readonly string CacheFileName = "Cache.json";
+    private static Dictionary<string, Comic> _cache = new();
 
     private static HttpClient Client => new();
     
@@ -17,7 +18,6 @@ public static class XkcdUtils
     
     public static async Task<string> GetXkcdApiUrlFromStringAsync(string query)
     {
-        Program.LogInfo("Retrieving Xkcd API URL from a string... ");
         var duckDuckGoRequest = DuckDuckGoUrlTemplate + query.Replace(" ", "+");
         
         var request = new HttpRequestMessage(HttpMethod.Get, duckDuckGoRequest);
@@ -29,7 +29,6 @@ public static class XkcdUtils
         var rawUrl = XkcdRegex.Match(content).Value;
         var url = $"https://www.{rawUrl}info.0.json";
         
-        Program.LogInfo("Success!", false);
         return url;
     }
 
@@ -40,12 +39,9 @@ public static class XkcdUtils
 
     public static async Task<Comic> GetComicAsync(string url)
     {
-        Program.LogInfo("Fetching Comic... ");
-        
-        if (Cache.ContainsKey(url))
+        if (_cache.ContainsKey(url))
         {
-            Program.LogInfo("Success (Cached)!", false);
-            return Cache[url];
+            return _cache[url];
         }
         
         var request = new HttpRequestMessage(HttpMethod.Get, url);
@@ -61,10 +57,31 @@ public static class XkcdUtils
         var content = await response.Content.ReadAsStringAsync();
         var comic = JsonConvert.DeserializeObject<Comic>(content);
         
-        Cache.Add(url, comic ?? throw new InvalidOperationException("Invalid Comic"));
+        _cache.Add(url, comic ?? throw new InvalidOperationException("Invalid Comic"));
 
-        Program.LogInfo("Success (API Call)!", false);
+        await SaveCacheAsync();
+
         return comic;
+    }
+
+    public static async Task LoadCacheAsync()
+    {
+        if (!File.Exists(CacheFileName))
+        {
+            File.Create(CacheFileName);
+            return;
+        }
+        
+        var jsonString = await File.ReadAllTextAsync(CacheFileName);
+
+        _cache = JsonConvert.DeserializeObject<Dictionary<string, Comic>>(jsonString) ?? new Dictionary<string, Comic>();
+    }
+    
+    private static async Task SaveCacheAsync()
+    {
+        var jsonCache = JsonConvert.SerializeObject(_cache);
+
+        await File.WriteAllTextAsync(CacheFileName, jsonCache);
     }
     
 }
