@@ -104,13 +104,13 @@ public static class Program
             var footer = "No query was provided";
             if (command.Data.Options?.Count is not 0)
                 footer = $"Query: {query}";
+            footer += $" • {comic.Date}";
         
             var embed = new EmbedBuilder()
                 .WithAuthor(comic.Title, _client?.CurrentUser.GetDefaultAvatarUrl(), comic.Url)
                 .WithImageUrl(comic.Image)
                 .WithDescription(comic.Alt)
                 .WithFooter(footer)
-                .WithCurrentTimestamp()
                 .WithColor(Color.Green);
 
             await command.FollowupAsync(embed: embed.Build()); 
