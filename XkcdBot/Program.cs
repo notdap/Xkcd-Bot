@@ -19,7 +19,11 @@ public static class Program
         _client = new DiscordSocketClient(config);
 
         _client.Log += Log;
-        
+
+        if (!File.Exists("Token.txt"))
+        {
+            File.Create("Token.txt");
+        }
         var token = await File.ReadAllTextAsync("Token.txt");
 
         _client.Ready += OnReadyAsync;
