@@ -115,14 +115,20 @@ public static class Program
             var footer = "No query was provided";
             if (command.Data.Options?.Count is not 0)
                 footer = $"Query: {query}";
-            footer += $" • {comic.Date}";
-        
+
+            var time = new DateTime(
+                int.Parse(comic.Year ?? string.Empty), 
+                int.Parse(comic.Month ?? string.Empty), 
+                int.Parse(comic.Day ?? string.Empty)
+            );
+
             var embed = new EmbedBuilder()
                 .WithAuthor(comic.Title, _client?.CurrentUser.GetAvatarUrl(), comic.Url)
                 .WithImageUrl(comic.Image)
                 .WithDescription(comic.Alt)
                 .WithFooter(footer)
-                .WithColor(Color.Green);
+                .WithColor(Color.Green)
+                .WithTimestamp(time);
 
             await command.FollowupAsync(embed: embed.Build()); 
         }

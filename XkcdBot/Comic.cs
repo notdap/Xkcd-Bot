@@ -12,9 +12,8 @@ public class Comic
     [JsonProperty("num")] private string? _id = "1";
     public string Url => $"https://www.xkcd.com/{_id}";
     
-    [JsonProperty("year")] private string? _year = "1000";
-    [JsonProperty("month")] private string? _month = "10";
-    [JsonProperty("day")] private string? _day = "10";
-    public string Date => $"{_day}/{_month}/{_year} (DD/MM/YYYY)";
+    [JsonProperty("year")] public string? Year = "1000";
+    [JsonProperty("month")] public string? Month = "10";
+    [JsonProperty("day")] public string? Day = "10";
 
 }
