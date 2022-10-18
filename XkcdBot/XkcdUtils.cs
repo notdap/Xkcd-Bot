@@ -6,29 +6,40 @@ namespace XkcdBot;
 
 public static class XkcdUtils
 {
-
-    private static readonly string CacheFileName = "Cache.json";
+    private const string CacheFileName = "Cache.json";
     private static Dictionary<string, Comic> _cache = new();
 
-    private static HttpClient Client => new();
+    private static readonly HttpClient Client;
     
-    private static string UserAgent => "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/104.0.5112.126 Safari/537.36";
     private static string DuckDuckGoUrlTemplate => "https://html.duckduckgo.com/html/?q=site:xkcd.com+";
     private static Regex XkcdRegex => new(@"xkcd\.com\/\d+\/?/");
-    
+
+    static XkcdUtils()
+    {
+        var handler = new HttpClientHandler
+        {
+            Proxy = null,
+            UseProxy = false
+        };
+        
+        Client = new HttpClient(handler);
+
+        const string userAgent = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/104.0.5112.126 Safari/537.36";
+        Client.DefaultRequestHeaders.Add("User-Agent", userAgent);
+    }
+
     public static async Task<string> GetXkcdApiUrlFromStringAsync(string query)
     {
         var duckDuckGoRequest = DuckDuckGoUrlTemplate + query.Replace(" ", "+");
-        
-        var request = new HttpRequestMessage(HttpMethod.Get, duckDuckGoRequest);
-        request.Headers.Add("User-Agent", UserAgent);
 
-        var response = await Client.SendAsync(request);
-        var content = await response.Content.ReadAsStringAsync();
+        using var request = new HttpRequestMessage(HttpMethod.Get, duckDuckGoRequest);
+
+        var response = await Client.SendAsync(request).ConfigureAwait(false);
+        var content = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
 
         var rawUrl = XkcdRegex.Match(content).Value;
         var url = $"https://www.{rawUrl}info.0.json";
-        
+
         return url;
     }
 
@@ -45,16 +56,15 @@ public static class XkcdUtils
         }
         
         var request = new HttpRequestMessage(HttpMethod.Get, url);
-        request.Headers.Add("User-Agent", UserAgent);
 
-        var response = await Client.SendAsync(request);
+        var response = await Client.SendAsync(request).ConfigureAwait(false);
 
         if (response.StatusCode is not HttpStatusCode.OK)
         {
             throw new NullReferenceException("Could not find comic");
         }
 
-        var content = await response.Content.ReadAsStringAsync();
+        var content = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
         var comic = JsonConvert.DeserializeObject<Comic>(content);
         
         _cache.Add(url, comic ?? throw new InvalidOperationException("Invalid Comic"));
